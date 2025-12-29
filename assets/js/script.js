@@ -1,3 +1,27 @@
+// Function to close the cart sidebar
+const closeCart = () => {
+  const sidebar = document.getElementById('cart-sidebar');
+  if (sidebar) {
+    sidebar.style.right = '-400px'; // Slide it back out
+  }
+};
+
+// Event listener for close button inside the sidebar
+const closeCartBtn = document.getElementById('close-cart-sidebar');
+if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
+// Function to open the cart sidebar
+const openCart = () => {
+  const sidebar = document.getElementById('cart-sidebar');
+  if (sidebar) sidebar.style.right = '0'; // Slide the sidebar in
+};
+
+// Event listener for Desktop bag icon
+const desktopCartBtn = document.getElementById('cart-trigger-btn');
+if (desktopCartBtn) desktopCartBtn.addEventListener('click', openCart);
+
+// Event listener for Mobile bag icon
+const mobileCartBtn = document.getElementById('mobile-cart-trigger-btn');
+if (mobileCartBtn) mobileCartBtn.addEventListener('click', openCart);
 /**
  * 1. Product Dictionary & Cart Array
  */
@@ -23,42 +47,37 @@ function openProductPopup(showcase) {
   if (!productInfo) return;
 
   const modal = document.getElementById('product-details-modal');
-  const content = document.getElementById('product-details-content');
+  const content = document.getElementById('modal-body-content'); // Use the correct ID from your HTML
   const imgSource = showcase.querySelector('.product-img.default').src;
 
+  // 1. Fill the modal content
   content.innerHTML = `
-    <div style="text-align:center; position:relative;">
-      <button id="popup-close-btn" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; color:#e94560; cursor:pointer;">&times;</button>
+    <div style="text-align:center;">
       <img src="${imgSource}" alt="${productInfo.name}" style="width:100%; border-radius:8px;">
       <h2 style="margin: 1rem 0 0.5rem;">${productInfo.name}</h2>
-      <p style="font-size:1.2rem; color:var(--salmon-pink); font-weight:700;">$${productInfo.price.toFixed(2)}</p>
-      <div style="display:flex; gap:10px; margin-top:1.5rem;">
-        <button id="add-to-cart-btn" style="flex:1; padding:10px; cursor:pointer; background:var(--salmon-pink); color:white; border:none; border-radius:5px; font-weight:600;">Add to Cart</button>
-        <button id="popup-checkout-btn" style="flex:1; padding:10px; cursor:pointer; border:2px solid var(--salmon-pink); color:#e94560; background:white; border-radius:5px; font-weight:600;">Checkout</button>
-      </div>
+      <p style="font-size:1.2rem; color: #e94560; font-weight:700;">$${productInfo.price.toFixed(2)}</p>
     </div>
   `;
 
-  // Add to Cart Event
-  document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-    shoppingCart.push(productId);
-    alert(`${productInfo.name} added to cart!`);
-    console.log("Current Cart IDs:", shoppingCart);
-    closeModal();
-  });
-
-  // Checkout Event
-  document.getElementById('popup-checkout-btn').addEventListener('click', () => {
-    alert("Checkout successful. Thank you!");
-    shoppingCart = []; // Reset cart
-    closeModal();
-  });
-
-  // X Close Button
-  document.getElementById('popup-close-btn').addEventListener('click', closeModal);
-
+  // 2. Show the modal
   modal.style.display = 'flex';
   modal.style.visibility = 'visible';
+  modal.style.opacity = '1';
+
+  // 3. Re-attach event listeners to the buttons ALREADY in your HTML
+  document.getElementById('modal-add-to-cart').onclick = function() {
+    shoppingCart.push(productId);
+    alert(`${productInfo.name} added to cart!`);
+    closeModal();
+  };
+
+  document.getElementById('modal-checkout').onclick = function() {
+    alert("Checkout successful. Thank you!");
+    shoppingCart = [];
+    closeModal();
+  };
+
+  document.getElementById('close-modal-btn').onclick = closeModal;
   modal.style.opacity = '1';
 }
 
@@ -80,41 +99,7 @@ showcases.forEach((item, index) => {
     content.style.cursor = 'pointer';
     content.addEventListener('click', function(e) {
       e.stopPropagation();
-      const data = productData[pId];
-      const imgSrc = item.querySelector('.product-img.default')?.src || item.querySelector('.product-img')?.src || '';
-      activeProductId = pId;
-      document.getElementById('modal-body-content').innerHTML = `
-        <img src="${imgSrc}" style="width:150px; margin-bottom:15px;">
-        <h3>${data.name}</h3>
-        <p style="font-size:1.2rem; color:#e94560; font-weight:bold;">$${data.price.toFixed(2)}</p>
-      `;
-      const modal = document.getElementById('product-details-modal');
-      modal.style.visibility = 'visible';
-      modal.style.opacity = '1';
-
-      // Attach modal button event listeners every time modal is opened
-      const addToCartBtn = document.getElementById('modal-add-to-cart');
-      if (addToCartBtn) {
-        addToCartBtn.onclick = function() {
-          if (activeProductId) {
-            shoppingCart.push(activeProductId);
-            alert(`${data.name} added to cart!`);
-            closeModal();
-          }
-        };
-      }
-      const checkoutBtn = document.getElementById('modal-checkout');
-      if (checkoutBtn) {
-        checkoutBtn.onclick = function() {
-          alert('Checkout successful. Thank you!');
-          shoppingCart = [];
-          closeModal();
-        };
-      }
-      const closeModalBtn = document.getElementById('close-modal-btn');
-      if (closeModalBtn) {
-        closeModalBtn.onclick = closeModal;
-      }
+      openProductPopup(item);
     });
   }
 });
